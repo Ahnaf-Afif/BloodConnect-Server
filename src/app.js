@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import { env } from "./config/env.js";
+import { isDBConnected } from "./config/db.js";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get("/health", (req, res) => {
   res.json({
     success: true,
     message: "Server is healthy",
+    database: isDBConnected() ? "connected" : "not connected",
   });
 });
 
