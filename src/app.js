@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import { isDBConnected } from "./config/db.js";
 import authRoutes from "./modules/auth/auth.routes.js";
+import donationRequestRoutes from "./modules/donationRequests/donationRequests.routes.js";
 import profileRoutes from "./modules/profiles/profiles.routes.js";
 
 const app = express();
@@ -21,6 +22,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/donation-requests", donationRequestRoutes);
 
 app.get("/", (req, res) => {
   res.send("Blood donation server is running");
