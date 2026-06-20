@@ -27,3 +27,15 @@ export function validateRegisterData(data) {
 
   return null;
 }
+
+export function validateLoginData(data) {
+  if (!data.email) {
+    return "email is required";
+  }
+
+  if (!data.password) {
+    return "password is required";
+  }
+
+  return null;
+}

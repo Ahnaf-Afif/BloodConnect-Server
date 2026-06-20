@@ -42,3 +42,36 @@ export async function createUser(data) {
     createdAt: newUser.createdAt,
   };
 }
+
+function removePassword(user) {
+  return {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    avatar: user.avatar,
+    bloodGroup: user.bloodGroup,
+    district: user.district,
+    upazila: user.upazila,
+    role: user.role,
+    status: user.status,
+    createdAt: user.createdAt,
+  };
+}
+
+export async function loginUser(data) {
+  const users = usersCollection();
+  const email = data.email.toLowerCase();
+  const user = await users.findOne({ email });
+
+  if (!user) {
+    return null;
+  }
+
+  const isPasswordMatched = await bcrypt.compare(data.password, user.password);
+
+  if (!isPasswordMatched) {
+    return null;
+  }
+
+  return removePassword(user);
+}
