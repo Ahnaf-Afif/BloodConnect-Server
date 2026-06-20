@@ -1,5 +1,7 @@
 import { createUser, loginUser } from "./auth.service.js";
 import { validateLoginData, validateRegisterData } from "./auth.validation.js";
+import { env } from "../../config/env.js";
+import { signJwt } from "../../utils/signJwt.js";
 
 export async function registerUser(req, res) {
   try {
@@ -61,9 +63,19 @@ export async function login(req, res) {
       });
     }
 
+    const token = signJwt(user);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: env.nodeEnv === "production",
+      sameSite: env.nodeEnv === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return res.json({
       success: true,
       message: "Login successful",
+      token,
       data: user,
     });
   } catch (error) {
