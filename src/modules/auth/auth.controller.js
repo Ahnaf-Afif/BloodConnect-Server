@@ -85,3 +85,11 @@ export async function login(req, res) {
     });
   }
 }
+
+export function getMe(req, res) {
+  return res.json({
+    success: true,
+    message: "Private route access allowed",
+    data: req.user,
+  });
+}
