@@ -1,5 +1,6 @@
 import {
   createDonationRequest,
+  getDonationRequestById,
   getMyDonationRequests,
   getPendingDonationRequests,
 } from "./donationRequests.service.js";
@@ -63,6 +64,30 @@ export async function getMyRequests(req, res) {
       success: true,
       message: "My donation requests loaded",
       data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function getDonationRequestDetails(req, res) {
+  try {
+    const request = await getDonationRequestById(req.params.id);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Donation request not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Donation request loaded",
+      data: request,
     });
   } catch (error) {
     return res.status(500).json({

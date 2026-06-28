@@ -98,3 +98,13 @@ export async function getMyDonationRequests(userId, query) {
     total,
   };
 }
+
+export async function getDonationRequestById(id) {
+  const requests = donationRequestsCollection();
+
+  if (!ObjectId.isValid(id)) {
+    return null;
+  }
+
+  return requests.findOne({ _id: new ObjectId(id) });
+}
