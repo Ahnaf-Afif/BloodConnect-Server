@@ -1,10 +1,16 @@
 import express from "express";
 
 import { verifyJwt } from "../../middlewares/verifyJwt.js";
-import { addDonationRequest } from "./donationRequests.controller.js";
+import {
+  addDonationRequest,
+  getMyRequests,
+  getPublicDonationRequests,
+} from "./donationRequests.controller.js";
 
 const router = express.Router();
 
+router.get("/", getPublicDonationRequests);
+router.get("/my-requests", verifyJwt, getMyRequests);
 router.post("/", verifyJwt, addDonationRequest);
 
 export default router;

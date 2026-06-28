@@ -1,4 +1,8 @@
-import { createDonationRequest } from "./donationRequests.service.js";
+import {
+  createDonationRequest,
+  getMyDonationRequests,
+  getPendingDonationRequests,
+} from "./donationRequests.service.js";
 import { validateDonationRequest } from "./donationRequests.validation.js";
 
 export async function addDonationRequest(req, res) {
@@ -25,6 +29,40 @@ export async function addDonationRequest(req, res) {
       success: true,
       message: "Donation request created",
       data: result.data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function getPublicDonationRequests(req, res) {
+  try {
+    const result = await getPendingDonationRequests(req.query);
+
+    return res.json({
+      success: true,
+      message: "Pending donation requests loaded",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function getMyRequests(req, res) {
+  try {
+    const result = await getMyDonationRequests(req.user.userId, req.query);
+
+    return res.json({
+      success: true,
+      message: "My donation requests loaded",
+      data: result,
     });
   } catch (error) {
     return res.status(500).json({

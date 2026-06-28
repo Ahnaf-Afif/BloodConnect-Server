@@ -5,6 +5,7 @@ import {
   usersCollection,
 } from "../../../database/collections.js";
 import { donationStatuses } from "../../constants/donationStatuses.js";
+import { buildPagination } from "../../utils/buildPagination.js";
 
 export async function createDonationRequest(userId, data) {
   const users = usersCollection();
@@ -45,5 +46,55 @@ export async function createDonationRequest(userId, data) {
       _id: result.insertedId,
       ...requestData,
     },
+  };
+}
+
+export async function getPendingDonationRequests(query) {
+  const requests = donationRequestsCollection();
+  const { page, limit, skip } = buildPagination(query);
+  const filter = { donationStatus: donationStatuses.pending };
+
+  const items = await requests
+    .find(filter)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+
+  const total = await requests.countDocuments(filter);
+
+  return {
+    items,
+    page,
+    limit,
+    total,
+  };
+}
+
+export async function getMyDonationRequests(userId, query) {
+  const requests = donationRequestsCollection();
+  const { page, limit, skip } = buildPagination(query);
+  const filter = {
+    requesterId: new ObjectId(userId),
+  };
+
+  if (query.status) {
+    filter.donationStatus = query.status;
+  }
+
+  const items = await requests
+    .find(filter)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .toArray();
+
+  const total = await requests.countDocuments(filter);
+
+  return {
+    items,
+    page,
+    limit,
+    total,
   };
 }
