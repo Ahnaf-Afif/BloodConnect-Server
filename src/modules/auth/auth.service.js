@@ -6,7 +6,7 @@ import { getAuth } from "../../config/auth.js";
 
 export async function createUser(data) {
   const users = usersCollection();
-  const email = data.email.toLowerCase();
+  const email = data.email.trim().toLowerCase();
   const oldUser = await users.findOne({ email });
 
   if (oldUser) {
@@ -15,13 +15,13 @@ export async function createUser(data) {
 
   await getAuth().api.signUpEmail({
     body: {
-      name: data.name,
+      name: data.name.trim(),
       email,
       password: data.password,
       image: data.avatar,
-      bloodGroup: data.bloodGroup,
-      district: data.district,
-      upazila: data.upazila,
+      bloodGroup: data.bloodGroup.trim(),
+      district: data.district.trim(),
+      upazila: data.upazila.trim(),
     },
   });
 
@@ -46,7 +46,7 @@ function removePrivateFields(user) {
 
 export async function loginUser(data) {
   const users = usersCollection();
-  const email = data.email.toLowerCase();
+  const email = data.email.trim().toLowerCase();
   try {
     await getAuth().api.signInEmail({
       body: {
