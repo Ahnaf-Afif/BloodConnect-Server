@@ -30,6 +30,17 @@ function cleanUser(user) {
 
 router.get("/search", async (req, res) => {
   try {
+    const hasSearch =
+      req.query.bloodGroup || req.query.district || req.query.upazila;
+
+    if (!hasSearch) {
+      return res.json({
+        success: true,
+        message: "Choose search options",
+        data: [],
+      });
+    }
+
     const filter = {
       role: roles.donor,
       status: "active",
@@ -71,12 +82,43 @@ router.get(
       const totalUsers = await usersCollection().countDocuments({
         role: roles.donor,
       });
-      const totalRequests = await donationRequestsCollection().countDocuments();
-      const fundList = await fundsCollection().find().toArray();
-      const totalFunding = fundList.reduce(
-        (sum, item) => sum + item.amount,
+      const requestGroups = await donationRequestsCollection()
+        .aggregate([
+          {
+            $group: {
+              _id: "$donationStatus",
+              count: { $sum: 1 },
+            },
+          },
+        ])
+        .toArray();
+      const fundingResult = await fundsCollection()
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              total: { $sum: "$amount" },
+            },
+          },
+        ])
+        .toArray();
+
+      const requestStats = {
+        pending: 0,
+        inprogress: 0,
+        done: 0,
+        canceled: 0,
+      };
+
+      requestGroups.forEach((item) => {
+        requestStats[item._id] = item.count;
+      });
+
+      const totalRequests = requestGroups.reduce(
+        (total, item) => total + item.count,
         0
       );
+      const totalFunding = fundingResult[0]?.total || 0;
 
       return res.json({
         success: true,
@@ -85,6 +127,7 @@ router.get(
           totalUsers,
           totalRequests,
           totalFunding,
+          requestStats,
         },
       });
     } catch (error) {
@@ -141,10 +184,27 @@ async function updateUser(req, res, update, message) {
       });
     }
 
-    await usersCollection().updateOne(
+    if (
+      req.user.userId === req.params.id &&
+      update.status === "blocked"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "You can not block your own account",
+      });
+    }
+
+    const result = await usersCollection().updateOne(
       { _id: new ObjectId(req.params.id) },
       { $set: update }
     );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     return res.json({
       success: true,
