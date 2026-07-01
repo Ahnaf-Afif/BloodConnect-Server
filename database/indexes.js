@@ -15,6 +15,10 @@ export async function createIndexes() {
   await donationRequestsCollection().createIndex({ createdAt: -1 });
 
   await fundsCollection().createIndex({ createdAt: -1 });
+  await fundsCollection().createIndex(
+    { stripeSessionId: 1 },
+    { unique: true, sparse: true }
+  );
 
   console.log("Database indexes ready");
 }

@@ -7,6 +7,9 @@ import { isDBConnected } from "./config/db.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import donationRequestRoutes from "./modules/donationRequests/donationRequests.routes.js";
 import profileRoutes from "./modules/profiles/profiles.routes.js";
+import userRoutes from "./routes/users.routes.js";
+import fundRoutes from "./routes/funds.routes.js";
+import contactRoutes from "./routes/contacts.routes.js";
 
 const app = express();
 
@@ -23,6 +26,9 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/donation-requests", donationRequestRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/funds", fundRoutes);
+app.use("/api/contacts", contactRoutes);
 
 app.get("/", (req, res) => {
   res.send("Blood donation server is running");
