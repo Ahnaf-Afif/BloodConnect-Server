@@ -8,7 +8,8 @@ Add your deployed API URL here.
 
 ## Features
 
-- JWT authentication with httpOnly cookies
+- Better Auth email and password authentication
+- JWT protection with httpOnly cookies
 - User registration, login, and logout
 - Profile management
 - Donation request CRUD with status workflow
@@ -31,6 +32,7 @@ PORT=5000
 CLIENT_URL=http://localhost:3000
 MONGODB_URI=your_mongodb_uri
 JWT_SECRET=your_jwt_secret
+BETTER_AUTH_SECRET=use_at_least_32_random_characters
 STRIPE_SECRET_KEY=your_stripe_secret_key
 ```
 
@@ -66,6 +68,7 @@ To create an admin, update a registered user's role to `admin` in MongoDB Atlas.
 
 - express
 - mongodb
+- better-auth
 - bcryptjs
 - jsonwebtoken
 - cookie-parser

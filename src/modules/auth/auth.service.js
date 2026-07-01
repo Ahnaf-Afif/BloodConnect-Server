@@ -1,7 +1,8 @@
-import bcrypt from "bcryptjs";
-
-import { usersCollection } from "../../../database/collections.js";
-import { roles } from "../../constants/roles.js";
+import {
+  accountsCollection,
+  usersCollection,
+} from "../../../database/collections.js";
+import { getAuth } from "../../config/auth.js";
 
 export async function createUser(data) {
   const users = usersCollection();
@@ -12,38 +13,23 @@ export async function createUser(data) {
     return null;
   }
 
-  const hashedPassword = await bcrypt.hash(data.password, 10);
+  await getAuth().api.signUpEmail({
+    body: {
+      name: data.name,
+      email,
+      password: data.password,
+      image: data.avatar,
+      bloodGroup: data.bloodGroup,
+      district: data.district,
+      upazila: data.upazila,
+    },
+  });
 
-  const newUser = {
-    name: data.name,
-    email,
-    avatar: data.avatar,
-    bloodGroup: data.bloodGroup,
-    district: data.district,
-    upazila: data.upazila,
-    password: hashedPassword,
-    role: roles.donor,
-    status: "active",
-    createdAt: new Date(),
-  };
-
-  const result = await users.insertOne(newUser);
-
-  return {
-    _id: result.insertedId,
-    name: newUser.name,
-    email: newUser.email,
-    avatar: newUser.avatar,
-    bloodGroup: newUser.bloodGroup,
-    district: newUser.district,
-    upazila: newUser.upazila,
-    role: newUser.role,
-    status: newUser.status,
-    createdAt: newUser.createdAt,
-  };
+  const user = await users.findOne({ email });
+  return removePrivateFields(user);
 }
 
-function removePassword(user) {
+function removePrivateFields(user) {
   return {
     _id: user._id,
     name: user.name,
@@ -61,17 +47,62 @@ function removePassword(user) {
 export async function loginUser(data) {
   const users = usersCollection();
   const email = data.email.toLowerCase();
+  try {
+    await getAuth().api.signInEmail({
+      body: {
+        email,
+        password: data.password,
+      },
+    });
+  } catch {
+    return null;
+  }
+
   const user = await users.findOne({ email });
+  return removePrivateFields(user);
+}
 
-  if (!user) {
-    return null;
+export async function migrateOldUsers() {
+  const users = usersCollection();
+  const accounts = accountsCollection();
+  const oldUsers = await users.find({ password: { $type: "string" } }).toArray();
+
+  for (const user of oldUsers) {
+    const date = user.createdAt || new Date();
+
+    await accounts.updateOne(
+      {
+        providerId: "credential",
+        accountId: user._id.toString(),
+      },
+      {
+        $setOnInsert: {
+          accountId: user._id.toString(),
+          providerId: "credential",
+          userId: user._id,
+          password: user.password,
+          createdAt: date,
+          updatedAt: date,
+        },
+      },
+      { upsert: true }
+    );
+
+    await users.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          emailVerified: false,
+          updatedAt: date,
+        },
+        $unset: {
+          password: "",
+        },
+      }
+    );
   }
 
-  const isPasswordMatched = await bcrypt.compare(data.password, user.password);
-
-  if (!isPasswordMatched) {
-    return null;
+  if (oldUsers.length > 0) {
+    console.log(`${oldUsers.length} old account(s) moved to Better Auth`);
   }
-
-  return removePassword(user);
 }
