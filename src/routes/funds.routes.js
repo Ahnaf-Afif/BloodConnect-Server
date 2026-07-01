@@ -33,11 +33,17 @@ router.get("/", verifyJwt, async (req, res) => {
 router.post("/checkout", verifyJwt, async (req, res) => {
   try {
     const amount = Number(req.body.amount);
+    const amountInCents = Math.round(amount * 100);
 
-    if (!amount || amount < 1) {
+    if (
+      !Number.isFinite(amount) ||
+      amount < 1 ||
+      amount > 10000 ||
+      Math.abs(amount * 100 - amountInCents) > 0.001
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Valid amount is required",
+        message: "Amount must be between 1 and 10,000 USD",
       });
     }
 
@@ -53,8 +59,9 @@ router.post("/checkout", verifyJwt, async (req, res) => {
       "payment_method_types[0]": "card",
       "line_items[0][price_data][currency]": "usd",
       "line_items[0][price_data][product_data][name]": "BloodConnect Fund",
-      "line_items[0][price_data][unit_amount]": String(amount * 100),
+      "line_items[0][price_data][unit_amount]": String(amountInCents),
       "line_items[0][quantity]": "1",
+      client_reference_id: req.user.userId,
       success_url: `${env.clientUrl}/funding?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${env.clientUrl}/funding?canceled=true`,
     });
@@ -134,6 +141,13 @@ router.post("/confirm", verifyJwt, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Payment is not completed",
+      });
+    }
+
+    if (session.client_reference_id !== req.user.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "This payment belongs to another user",
       });
     }
 

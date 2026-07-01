@@ -7,6 +7,7 @@ import {
   usersCollection,
 } from "../../database/collections.js";
 import { roles } from "../constants/roles.js";
+import { bloodGroups } from "../constants/bloodGroups.js";
 import { verifyJwt } from "../middlewares/verifyJwt.js";
 import { verifyRole } from "../middlewares/verifyRole.js";
 import { buildPagination } from "../utils/buildPagination.js";
@@ -30,35 +31,33 @@ function cleanUser(user) {
 
 router.get("/search", async (req, res) => {
   try {
-    const hasSearch =
-      req.query.bloodGroup || req.query.district || req.query.upazila;
+    const { bloodGroup, district, upazila } = req.query;
+    const hasSearch = bloodGroup && district && upazila;
 
     if (!hasSearch) {
       return res.json({
         success: true,
-        message: "Choose search options",
+        message: "Blood group, district and upazila are required",
         data: [],
+      });
+    }
+
+    if (!bloodGroups.includes(bloodGroup.trim())) {
+      return res.status(400).json({
+        success: false,
+        message: "Blood group is not valid",
       });
     }
 
     const filter = {
       role: roles.donor,
       status: "active",
+      bloodGroup: bloodGroup.trim(),
+      district: district.trim(),
+      upazila: upazila.trim(),
     };
 
-    if (req.query.bloodGroup) {
-      filter.bloodGroup = req.query.bloodGroup.trim();
-    }
-
-    if (req.query.district) {
-      filter.district = req.query.district.trim();
-    }
-
-    if (req.query.upazila) {
-      filter.upazila = req.query.upazila.trim();
-    }
-
-    const items = await usersCollection().find(filter).toArray();
+    const items = await usersCollection().find(filter).limit(50).toArray();
 
     return res.json({
       success: true,
