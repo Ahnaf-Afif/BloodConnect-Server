@@ -2,6 +2,8 @@ import { createUser, loginUser } from "./auth.service.js";
 import { validateLoginData, validateRegisterData } from "./auth.validation.js";
 import { env } from "../../config/env.js";
 import { signJwt } from "../../utils/signJwt.js";
+import { usersCollection } from "../../../database/collections.js";
+import { ObjectId } from "mongodb";
 
 export async function registerUser(req, res) {
   try {
@@ -86,10 +88,47 @@ export async function login(req, res) {
   }
 }
 
-export function getMe(req, res) {
+export async function getMe(req, res) {
+  try {
+    const users = usersCollection();
+    const user = await users.findOne({ _id: new ObjectId(req.user.userId) });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Private route access allowed",
+      data: {
+        userId: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+        status: user.status,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export function logout(req, res) {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: env.nodeEnv === "production",
+    sameSite: env.nodeEnv === "production" ? "none" : "lax",
+  });
+
   return res.json({
     success: true,
-    message: "Private route access allowed",
-    data: req.user,
+    message: "Logged out",
   });
 }
