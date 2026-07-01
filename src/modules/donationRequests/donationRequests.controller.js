@@ -12,6 +12,10 @@ import {
 import { donationStatuses } from "../../constants/donationStatuses.js";
 import { validateDonationRequest } from "./donationRequests.validation.js";
 
+function hasInvalidStatus(status) {
+  return status && !Object.values(donationStatuses).includes(status);
+}
+
 export async function addDonationRequest(req, res) {
   try {
     const errorMessage = validateDonationRequest(req.body);
@@ -64,6 +68,13 @@ export async function getPublicDonationRequests(req, res) {
 
 export async function getMyRequests(req, res) {
   try {
+    if (hasInvalidStatus(req.query.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Status filter is not valid",
+      });
+    }
+
     const result = await getMyDonationRequests(req.user.userId, req.query);
 
     return res.json({
@@ -81,6 +92,13 @@ export async function getMyRequests(req, res) {
 
 export async function getAllRequests(req, res) {
   try {
+    if (hasInvalidStatus(req.query.status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Status filter is not valid",
+      });
+    }
+
     const result = await getAllDonationRequests(req.query);
 
     return res.json({

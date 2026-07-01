@@ -144,6 +144,13 @@ router.get("/", verifyJwt, verifyRole(roles.admin), async (req, res) => {
     const filter = {};
 
     if (req.query.status) {
+      if (!["active", "blocked"].includes(req.query.status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Status filter is not valid",
+        });
+      }
+
       filter.status = req.query.status;
     }
 

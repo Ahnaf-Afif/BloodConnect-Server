@@ -13,6 +13,8 @@ import contactRoutes from "./routes/contacts.routes.js";
 
 const app = express();
 
+app.disable("x-powered-by");
+
 app.use(
   cors({
     origin: env.clientUrl,
@@ -39,6 +41,28 @@ app.get("/health", (req, res) => {
     success: true,
     message: "Server is healthy",
     database: isDBConnected() ? "connected" : "not connected",
+  });
+});
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API route not found",
+  });
+});
+
+app.use((error, req, res, next) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  const isInvalidJson = error.type === "entity.parse.failed";
+
+  return res.status(isInvalidJson ? 400 : 500).json({
+    success: false,
+    message: isInvalidJson
+      ? "Request body is not valid JSON"
+      : "Server could not process the request",
   });
 });
 

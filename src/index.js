@@ -5,6 +5,10 @@ import { createIndexes } from "../database/indexes.js";
 import { migrateOldUsers } from "./modules/auth/auth.service.js";
 
 async function startServer() {
+  if (!env.jwtSecret || !env.betterAuthSecret) {
+    throw new Error("JWT_SECRET or BETTER_AUTH_SECRET is missing in .env");
+  }
+
   await connectDB();
   await migrateOldUsers();
   await createIndexes();
