@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 
 import { env } from "./config/env.js";
 import { isDBConnected } from "./config/db.js";
+import { setupServer } from "./config/setup.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import donationRequestRoutes from "./modules/donationRequests/donationRequests.routes.js";
 import profileRoutes from "./modules/profiles/profiles.routes.js";
@@ -24,6 +25,15 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(async (req, res, next) => {
+  try {
+    await setupServer();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);

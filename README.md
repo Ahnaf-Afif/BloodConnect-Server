@@ -1,10 +1,10 @@
 # BloodConnect Server
 
-Backend API for the BloodConnect donation platform.
+Express and MongoDB API for the BloodConnect donation platform.
 
 ## Live URL
 
-Add your deployed API URL here.
+Not deployed yet.
 
 ## Features
 
@@ -15,8 +15,9 @@ Add your deployed API URL here.
 - Donation request CRUD with status workflow
 - Donor search by blood group and location
 - Admin user management including block, volunteer, and admin roles
-- Funding checkout and confirmation flow
+- Stripe funding checkout and payment confirmation
 - Contact form API
+- Vercel serverless support
 
 ## Run Locally
 
@@ -25,7 +26,7 @@ npm install
 npm run dev
 ```
 
-Create a `.env` file:
+Copy `.env.example` to `.env` and add:
 
 ```env
 PORT=5000
@@ -37,6 +38,8 @@ STRIPE_SECRET_KEY=your_stripe_secret_key
 ```
 
 The server runs on `http://localhost:5000`.
+
+Use test-mode Stripe keys during development.
 
 ## API Routes
 
@@ -57,6 +60,10 @@ The server runs on `http://localhost:5000`.
 - `GET /api/users/search`
 - `GET /api/users` (admin)
 - `GET /api/users/stats`
+- `PATCH /api/users/:id/block`
+- `PATCH /api/users/:id/unblock`
+- `PATCH /api/users/:id/make-volunteer`
+- `PATCH /api/users/:id/make-admin`
 - `GET /api/funds`
 - `POST /api/funds/checkout`
 - `POST /api/funds/confirm`
@@ -74,3 +81,9 @@ To create an admin, update a registered user's role to `admin` in MongoDB Atlas.
 - cookie-parser
 - cors
 - dotenv
+
+## Deployment
+
+Deploy this repository to Vercel and add all variables from `.env.example`.
+Set `CLIENT_URL` to the deployed frontend URL. After deployment, update the
+client's `NEXT_PUBLIC_SERVER_URL` with the deployed API URL.

@@ -1,17 +1,9 @@
 import app from "./app.js";
 import { env } from "./config/env.js";
-import { connectDB } from "./config/db.js";
-import { createIndexes } from "../database/indexes.js";
-import { migrateOldUsers } from "./modules/auth/auth.service.js";
+import { setupServer } from "./config/setup.js";
 
 async function startServer() {
-  if (!env.jwtSecret || !env.betterAuthSecret) {
-    throw new Error("JWT_SECRET or BETTER_AUTH_SECRET is missing in .env");
-  }
-
-  await connectDB();
-  await migrateOldUsers();
-  await createIndexes();
+  await setupServer();
 
   app.listen(env.port, () => {
     console.log(`Server is running on port ${env.port}`);
