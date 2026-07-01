@@ -143,6 +143,10 @@ export async function updateDonationRequest(id, userId, role, data) {
     return { error: "Donation request not found" };
   }
 
+  if (role === "volunteer") {
+    return { error: "Volunteers can only update request status" };
+  }
+
   const isOwner = request.requesterId.toString() === userId;
   const isAdmin = role === "admin";
 
@@ -177,6 +181,10 @@ export async function deleteDonationRequest(id, userId, role) {
 
   if (!request) {
     return { error: "Donation request not found" };
+  }
+
+  if (role === "volunteer") {
+    return { error: "Volunteers can only update request status" };
   }
 
   const isOwner = request.requesterId.toString() === userId;

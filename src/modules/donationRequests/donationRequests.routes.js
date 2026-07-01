@@ -24,11 +24,31 @@ router.get(
   verifyRole(roles.admin, roles.volunteer),
   getAllRequests
 );
-router.get("/my-requests", verifyJwt, getMyRequests);
-router.post("/", verifyJwt, addDonationRequest);
+router.get(
+  "/my-requests",
+  verifyJwt,
+  verifyRole(roles.donor),
+  getMyRequests
+);
+router.post(
+  "/",
+  verifyJwt,
+  verifyRole(roles.donor),
+  addDonationRequest
+);
 router.get("/:id", verifyJwt, getDonationRequestDetails);
-router.patch("/:id", verifyJwt, editDonationRequest);
-router.delete("/:id", verifyJwt, removeDonationRequest);
+router.patch(
+  "/:id",
+  verifyJwt,
+  verifyRole(roles.donor, roles.admin),
+  editDonationRequest
+);
+router.delete(
+  "/:id",
+  verifyJwt,
+  verifyRole(roles.donor, roles.admin),
+  removeDonationRequest
+);
 router.patch("/:id/status", verifyJwt, changeDonationStatus);
 router.patch("/:id/donate", verifyJwt, confirmDonation);
 
