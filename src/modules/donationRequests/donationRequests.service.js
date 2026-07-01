@@ -256,8 +256,19 @@ export async function donateToRequest(id, userId) {
     return { error: "User not found" };
   }
 
-  await requests.updateOne(
-    { _id: new ObjectId(id) },
+  if (user.status === "blocked") {
+    return { error: "Blocked user can not donate" };
+  }
+
+  if (request.requesterId.toString() === userId) {
+    return { error: "You can not donate to your own request" };
+  }
+
+  const result = await requests.updateOne(
+    {
+      _id: new ObjectId(id),
+      donationStatus: donationStatuses.pending,
+    },
     {
       $set: {
         donationStatus: donationStatuses.inprogress,
@@ -266,6 +277,10 @@ export async function donateToRequest(id, userId) {
       },
     }
   );
+
+  if (result.modifiedCount === 0) {
+    return { error: "Another donor already accepted this request" };
+  }
 
   return { success: true };
 }
