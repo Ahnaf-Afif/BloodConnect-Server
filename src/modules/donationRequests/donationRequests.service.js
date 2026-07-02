@@ -154,10 +154,6 @@ export async function updateDonationRequest(id, userId, role, data) {
     return { error: "You can not edit this request" };
   }
 
-  if (request.donationStatus !== donationStatuses.pending && !isAdmin) {
-    return { error: "Only pending requests can be edited" };
-  }
-
   const updateData = {
     recipientName: data.recipientName.trim(),
     recipientDistrict: data.recipientDistrict.trim(),
