@@ -4,7 +4,7 @@ Express and MongoDB API for the BloodConnect donation platform.
 
 ## Live URL
 
-Not deployed yet.
+https://bloodconnect-server-afif.vercel.app
 
 ## Features
 
