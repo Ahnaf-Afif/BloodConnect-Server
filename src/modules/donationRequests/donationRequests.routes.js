@@ -33,7 +33,7 @@ router.get(
 router.post(
   "/",
   verifyJwt,
-  verifyRole(roles.donor),
+  verifyRole(roles.donor, roles.volunteer, roles.admin),
   addDonationRequest
 );
 router.get("/:id", verifyJwt, getDonationRequestDetails);
